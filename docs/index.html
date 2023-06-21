@@ -8,31 +8,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Ethereum Input Data Decoder</h1>
+  <h2>Ethereum Input Data Decoder</h2>
 
   <div class="container">
     <div class="column">
-      <div class="actions"></div>
-      <label>ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
-      <textarea id="abiInput" cols="70" rows="35" placeholder="[]"></textarea>
+      <label class="data-label"">ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
+      <textarea id="abiInput" cols="70" rows="25" placeholder="[]"></textarea>
     </div>
     <div class="column">
-      <div class="actions"></div>
-      <label>Input Data:</label>
-      <textarea id="dataInput" cols="70" rows="35" placeholder="0x"></textarea>
+      <label class="data-label">Input Data:</label>
+      <textarea id="dataInput" cols="70" rows="25" placeholder="0x"></textarea>
     </div>
     <div class="column">
-      <div class="actions">
-        <button id="decode">Decode</button>
-      </div>
       <div>
-        <label>Output:</label>
-        <textarea id="output" cols="70" rows="35" readonly></textarea>
+        <label class="data-label">Output: <button id="decode">Decode</button></label>
+        <textarea id="output" cols="70" rows="25" readonly></textarea>
       </div>
     </div>
   </div>
 
-  <h1>Ethereum Unit Converter</h1>
+  <h2>Ethereum Unit Converter</h2>
 
   <div class="container">
     <div class="column">
@@ -52,7 +47,7 @@
     </div>
   </div>
 
-  <h1>Timestamp Date Converter</h1>
+  <h2>Timestamp Date Converter</h2>
 
   <div class="container">
     <div class="column">

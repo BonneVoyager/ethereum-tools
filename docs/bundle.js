@@ -29,24 +29,25 @@ function stringifyBigNumbers(obj) {
 function decode() {
   $output.value = ''
 
-  const abi = JSON.parse($abiInput.value.trim());
-  const decoder = new InputDataDecoder(abi);
-
-  // if copied and pasted from etherscan only get data we need
-  const data = $dataInput.value.trim()
-  .replace(/(?:[\s\S]*MethodID: (.*)[\s\S])?[\s\S]?\[\d\]:(.*)/gi, '$1$2')
-
-  $dataInput.value = data
-
-  let result = decoder.decodeData(data);
-
-  console.log(result)
-
-  result.inputs = stringifyBigNumbers(result.inputs);
-
   try {
+    const abi = JSON.parse($abiInput.value.trim());
+    const decoder = new InputDataDecoder(abi);
+  
+    // if copied and pasted from etherscan only get data we need
+    const data = $dataInput.value.trim().replace(/(?:[\s\S]*MethodID: (.*)[\s\S])?[\s\S]?\[\d\]:(.*)/gi, '$1$2');
+  
+    $dataInput.value = data;
+  
+    const result = decoder.decodeData(data);
+  
+    console.log(result);
+  
+    result.inputs = stringifyBigNumbers(result.inputs);
+
     $output.value = JSON.stringify(result, null, 2);
-  } catch(error) {}
+  } catch(error) {
+    $output.value = "Invalid ABI or Input Data";
+  }
 }
 
 $decode.addEventListener('click', function(event) {
@@ -63,7 +64,7 @@ $getAbi.addEventListener('click', async function() {
     if (json.status !== '1') throw new Error('Invalid Etherscan status');
     $abiInput.value = JSON.stringify(JSON.parse(json.result), null, 2);
   } catch (ex) {
-    alert('Could not fetch contract ABI');
+    alert('Could not fetch contract ABI from Etherscan');
   }
 });
 
@@ -80,6 +81,14 @@ $output.addEventListener('click', function() {
     }
   } catch (ex) {}
 })
+
+$abiInput.addEventListener('input', function() {
+  setTimeout(decode, 50);
+});
+
+$dataInput.addEventListener('input', function() {
+  setTimeout(decode, 50);
+});
 
 // Unit Converter
 

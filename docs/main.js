@@ -37,14 +37,16 @@ function decode() {
   
     $dataInput.value = data;
   
-    let result = decoder.decodeData(data);
+    const result = decoder.decodeData(data);
   
     console.log(result);
   
     result.inputs = stringifyBigNumbers(result.inputs);
 
     $output.value = JSON.stringify(result, null, 2);
-  } catch(error) {}
+  } catch(error) {
+    $output.value = "Invalid ABI or Input Data";
+  }
 }
 
 $decode.addEventListener('click', function(event) {
@@ -78,6 +80,14 @@ $output.addEventListener('click', function() {
     }
   } catch (ex) {}
 })
+
+$abiInput.addEventListener('input', function() {
+  setTimeout(decode, 50);
+});
+
+$dataInput.addEventListener('input', function() {
+  setTimeout(decode, 50);
+});
 
 // Unit Converter
 
