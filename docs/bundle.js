@@ -50,24 +50,36 @@ function decode() {
   }
 }
 
+async function fetchContract(contract) {
+  const response = await fetch(`https://api.etherscan.io/api?module=contract&action=getabi&address=${contract}`);
+  const json = await response.json();
+  if (json.status !== '1') throw new Error('Invalid Etherscan status');
+  $abiInput.value = JSON.stringify(JSON.parse(json.result), null, 2);
+  decode();
+}
+
 $decode.addEventListener('click', function(event) {
   event.preventDefault();
   decode();
 });
 
 $getAbi.addEventListener('click', async function() {
-  const contract = prompt('Enter contract address');
+  const contract = prompt('Enter contract address:').trim();
   if (!contract) return;
   try {
-    const response = await fetch(`https://api.etherscan.io/api?module=contract&action=getabi&address=${contract}`);
-    const json = await response.json();
-    if (json.status !== '1') throw new Error('Invalid Etherscan status');
-    $abiInput.value = JSON.stringify(JSON.parse(json.result), null, 2);
-    decode();
+    await fetchContract(contract);
+    const url = new URL(window.location);
+    url.searchParams.set('contract', contract);
+    window.history.pushState(null, '', url.toString());
   } catch (ex) {
     alert('Could not fetch contract ABI from Etherscan');
   }
 });
+
+const initContract = new URLSearchParams(window.location.search).get('contract');
+if (initContract) {
+  fetchContract(initContract);
+}
 
 $output.addEventListener('click', function() {
   const selected = $output.value.substring($output.selectionStart, $output.selectionEnd);
