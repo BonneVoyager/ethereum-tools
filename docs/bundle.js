@@ -63,6 +63,7 @@ $getAbi.addEventListener('click', async function() {
     const json = await response.json();
     if (json.status !== '1') throw new Error('Invalid Etherscan status');
     $abiInput.value = JSON.stringify(JSON.parse(json.result), null, 2);
+    decode();
   } catch (ex) {
     alert('Could not fetch contract ABI from Etherscan');
   }
@@ -138,12 +139,14 @@ setConverterInputs(unitInitValue);
 
 const $timestamp = document.querySelector('#timestamp');
 const $date = document.querySelector('#date');
+const $localeDate = document.querySelector('#localeDate');
 
 const timestampInitValue = Math.ceil(Date.now() / 1000);
 
 function setDateInputs(timestamp) {
   const jsTimestamp = timestamp * 1000;
   $date.value = new Date(jsTimestamp).toISOString().replace('T', ' ').replace('.000Z', '');
+  $localeDate.value = new Date(jsTimestamp).toLocaleString();
 }
 
 $timestamp.addEventListener('input', function () {

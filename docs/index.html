@@ -13,17 +13,15 @@
   <div class="container">
     <div class="column">
       <label class="data-label"">ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
-      <textarea id="abiInput" cols="70" rows="25" placeholder="[]"></textarea>
+      <textarea class="textarea" id="abiInput" cols="70" rows="25" placeholder="[]"></textarea>
     </div>
     <div class="column">
       <label class="data-label">Input Data:</label>
-      <textarea id="dataInput" cols="70" rows="25" placeholder="0x"></textarea>
+      <textarea class="textarea" id="dataInput" cols="70" rows="25" placeholder="0x"></textarea>
     </div>
     <div class="column">
-      <div>
-        <label class="data-label">Output: <button id="decode">Decode</button></label>
-        <textarea id="output" cols="70" rows="25" readonly></textarea>
-      </div>
+      <label class="data-label">Output: <button id="decode">Decode</button></label>
+      <textarea class="textarea" id="output" cols="70" rows="25" readonly></textarea>
     </div>
   </div>
 
@@ -58,6 +56,11 @@
     <div class="column">
       <label class="label">Readable Date (UTC):
         <input class="input" id="date" type="text" readonly />
+      </label>
+    </div>
+    <div class="column">
+      <label class="label">Locale Date:
+        <input class="input" id="localeDate" type="text" readonly />
       </label>
     </div>
   </div>
