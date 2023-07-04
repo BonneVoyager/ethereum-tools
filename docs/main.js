@@ -108,7 +108,8 @@ const $wei = document.querySelector('#wei');
 const $gwei = document.querySelector('#gwei');
 const $ether = document.querySelector('#ether');
 
-const unitInitValue = parseUnits('1', 'ether');
+const searchUnit = new URL(window.location).searchParams.get('unit');
+const unitInitValue = searchUnit ? BigNumber.from(searchUnit) : parseUnits('1', 'ether');
 
 function removeTrailingZero(value) {
   const [number, decimal] = value.split('.');
@@ -124,6 +125,10 @@ function setConverterInputs(value) {
     $wei.value = removeTrailingZero(formatUnits(value, 'wei'));
     $gwei.value = removeTrailingZero(formatUnits(value, 'gwei'));
     $ether.value = removeTrailingZero(formatUnits(value, 'ether'));
+
+    const url = new URL(window.location);
+    url.searchParams.set('unit', value);
+    window.history.pushState(null, '', url.toString());
   } catch (ex) {
     $wei.value = 0;
     $gwei.value = 0;
@@ -152,12 +157,17 @@ const $timestamp = document.querySelector('#timestamp');
 const $date = document.querySelector('#date');
 const $localeDate = document.querySelector('#localeDate');
 
-const timestampInitValue = Math.ceil(Date.now() / 1000);
+const timestampUnit = new URL(window.location).searchParams.get('timestamp');
+const timestampInitValue = timestampUnit ? BigNumber.from(timestampUnit) : Math.ceil(Date.now() / 1000);
 
 function setDateInputs(timestamp) {
   const jsTimestamp = timestamp * 1000;
   $date.value = new Date(jsTimestamp).toISOString().replace('T', ' ').replace('.000Z', '');
   $localeDate.value = new Date(jsTimestamp).toLocaleString();
+
+  const url = new URL(window.location);
+  url.searchParams.set('timestamp', timestamp);
+  window.history.pushState(null, '', url.toString());
 }
 
 $timestamp.addEventListener('input', function () {
@@ -167,3 +177,44 @@ $timestamp.addEventListener('input', function () {
 
 $timestamp.value = timestampInitValue;
 setDateInputs(timestampInitValue);
+
+// Collapse button
+
+const $decoderCollapse = document.getElementById('input-data-decoder-collapse');
+const $unitCollapse = document.getElementById('unit-converter-collapse');
+const $timestampCollapse = document.getElementById('timestamp-converter-collapse');
+
+const $decoderContainer = document.getElementById('input-data-decoder');
+const $unitContainer = document.getElementById('unit-converter');
+const $timestampContainer = document.getElementById('timestamp-converter');
+
+$decoderCollapse.addEventListener('click', function() {
+  $decoderContainer.classList.toggle('collapsed');
+
+  const isCollapsed = $decoderContainer.classList.contains('collapsed');
+  localStorage.setItem('decoder-collapsed', isCollapsed);
+  $decoderCollapse.innerText = `Ethereum Input Data Decoder ${isCollapsed ? '' : ''}`
+});
+$unitCollapse.addEventListener('click', function() {
+  $unitContainer.classList.toggle('collapsed');
+
+  const isCollapsed = $unitContainer.classList.contains('collapsed');
+  localStorage.setItem('unit-collapsed', isCollapsed);
+  $unitCollapse.innerText = `Ethereum Unit Converter ${isCollapsed ? '' : ''}`
+});
+$timestampCollapse.addEventListener('click', function() {
+  $timestampContainer.classList.toggle('collapsed');
+
+  const isCollapsed = $timestampContainer.classList.contains('collapsed');
+  localStorage.setItem('timestamp-collapsed', isCollapsed);
+  $timestampCollapse.innerText = `Timestamp Date Converter ${isCollapsed ? '' : ''}`
+});
+if (localStorage.getItem('decoder-collapsed') === 'true') {
+  $decoderCollapse.click();
+}
+if (localStorage.getItem('unit-collapsed') === 'true') {
+  $unitCollapse.click();
+}
+if (localStorage.getItem('timestamp-collapsed') === 'true') {
+  $timestampCollapse.click();
+}

@@ -669,6 +669,8 @@ h2 {
   margin-bottom: 20px;
   margin-top: 20px;
   font-size: 36px;
+  height: 40px;
+  cursor: pointer;
 }
 
 button {
@@ -677,6 +679,7 @@ button {
 
 .container {
   display: flex;
+  min-width: 1000px;
   width: 100%;
   height: 100%;
 }
@@ -709,4 +712,15 @@ button {
 
 .textarea {
   width: 100%;
+}
+
+#input-data-decoder,
+#unit-converter,
+#timestamp-converter {
+  overflow: hidden;
+}
+#input-data-decoder.collapsed,
+#unit-converter.collapsed,
+#timestamp-converter.collapsed {
+  height: 0;
 }

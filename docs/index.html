@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
@@ -8,9 +7,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Ethereum Input Data Decoder</h2>
+  <h2 id="input-data-decoder-collapse">Ethereum Input Data Decoder</h2>
 
-  <div class="container">
+  <div id="input-data-decoder" class="container">
     <div class="column">
       <label class="data-label"">ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
       <textarea class="textarea" id="abiInput" cols="70" rows="25" placeholder="[]"></textarea>
@@ -25,9 +24,9 @@
     </div>
   </div>
 
-  <h2>Ethereum Unit Converter</h2>
+  <h2 id="unit-converter-collapse">Ethereum Unit Converter</h2>
 
-  <div class="container">
+  <div id="unit-converter" class="container">
     <div class="column">
       <label class="label">Wei:
         <input class="input" id="wei" type="number" />
@@ -45,9 +44,9 @@
     </div>
   </div>
 
-  <h2>Timestamp Date Converter</h2>
+  <h2 id="timestamp-converter-collapse">Timestamp Date Converter</h2>
 
-  <div class="container">
+  <div id="timestamp-converter" class="container">
     <div class="column">
       <label class="label">Timestamp:
         <input class="input" id="timestamp" type="number" />
