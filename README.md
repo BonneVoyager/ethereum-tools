@@ -9,6 +9,10 @@ This is a fork of [ethereum-input-data-decoder](https://github.com/miguelmota/et
 
 Please check the original repo for documentation and an NPM package.
 
+The motivation behind this fork is that the archived code actually works fine and it's useful when your team needs to validate the transactions before actually deploying or executing them (e.g. via multi-sig).
+
+web interface is available [here](https://bonnevoyager.github.io/ethereum-input-data-decoder/).
+
 ## Development
 
 1. Clone repository:
