@@ -136,16 +136,25 @@ function setConverterInputs(value) {
   }
 }
 
+function toPlainString(num) { // this is to support scientific notation
+  return ('' + num).replace(/(-?)(\d*)\.?(\d+)e([+-]\d+)/, function (a,b,c,d,e) {
+    return e < 0
+      ? b + '0.' + Array(1-e-c.length).join(0) + c + d
+      : b + c + d + Array(e-d.length+1).join(0);
+    }
+  );
+}
+
 $wei.addEventListener('input', function () {
-  const value = BigNumber.from(parseUnits($wei.value, 'wei'));
+  const value = BigNumber.from(parseUnits(toPlainString($wei.value), 'wei'));
   setConverterInputs(value);
 });
 $gwei.addEventListener('input', function () {
-  const value = BigNumber.from(parseUnits($gwei.value, 'gwei'));
+  const value = BigNumber.from(parseUnits(toPlainString($gwei.value), 'gwei'));
   setConverterInputs(value);
 });
 $ether.addEventListener('input', function () {
-  const value = BigNumber.from(parseUnits($ether.value, 'ether'));
+  const value = BigNumber.from(parseUnits(toPlainString($ether.value), 'ether'));
   setConverterInputs(value);
 });
 
