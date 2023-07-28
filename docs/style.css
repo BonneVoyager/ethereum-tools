@@ -716,11 +716,13 @@ button {
 
 #input-data-decoder,
 #unit-converter,
-#timestamp-converter {
+#timestamp-converter,
+#hexadecimal-converter {
   overflow: hidden;
 }
 #input-data-decoder.collapsed,
 #unit-converter.collapsed,
-#timestamp-converter.collapsed {
+#timestamp-converter.collapsed,
+#hexadecimal-converter.collapsed {
   height: 0;
 }

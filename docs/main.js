@@ -187,16 +187,39 @@ $timestamp.addEventListener('input', function () {
 $timestamp.value = timestampInitValue;
 setDateInputs(timestampInitValue);
 
+// Hexadecimals
+
+const $hexadecimal = document.querySelector('#hexadecimal');
+const $decimal = document.querySelector('#decimal');
+const $hexadecimalEth = document.querySelector('#hexadecimal-eth');
+
+const hexadecimalUnit = new URL(window.location).searchParams.get('hexadecimal');
+
+function setHexadecimalInputs(value) {
+  const bnBalue = BigNumber.from(value);
+  $hexadecimal.value = bnBalue.toHexString();
+  $decimal.value = bnBalue.toString();
+  $hexadecimalEth.value = formatUnits(value, 'ether');
+
+  const url = new URL(window.location);
+  url.searchParams.set('hexadecimal', bnBalue.toHexString());
+  window.history.pushState(null, '', url.toString());
+}
+
+$hexadecimal.addEventListener('input', function () {
+  setHexadecimalInputs(BigNumber.from($hexadecimal.value).toString());
+});
+$decimal.addEventListener('input', function () {
+  setHexadecimalInputs(BigNumber.from($decimal.value).toString());
+});
+
+$hexadecimal.value = hexadecimalUnit;
+setHexadecimalInputs(hexadecimalUnit);
+
 // Collapse button
 
 const $decoderCollapse = document.getElementById('input-data-decoder-collapse');
-const $unitCollapse = document.getElementById('unit-converter-collapse');
-const $timestampCollapse = document.getElementById('timestamp-converter-collapse');
-
 const $decoderContainer = document.getElementById('input-data-decoder');
-const $unitContainer = document.getElementById('unit-converter');
-const $timestampContainer = document.getElementById('timestamp-converter');
-
 $decoderCollapse.addEventListener('click', function() {
   $decoderContainer.classList.toggle('collapsed');
 
@@ -204,6 +227,12 @@ $decoderCollapse.addEventListener('click', function() {
   localStorage.setItem('decoder-collapsed', isCollapsed);
   $decoderCollapse.innerText = `Ethereum Input Data Decoder ${isCollapsed ? '' : ''}`
 });
+if (localStorage.getItem('decoder-collapsed') === 'true') {
+  $decoderCollapse.click();
+}
+
+const $unitCollapse = document.getElementById('unit-converter-collapse');
+const $unitContainer = document.getElementById('unit-converter');
 $unitCollapse.addEventListener('click', function() {
   $unitContainer.classList.toggle('collapsed');
 
@@ -211,6 +240,12 @@ $unitCollapse.addEventListener('click', function() {
   localStorage.setItem('unit-collapsed', isCollapsed);
   $unitCollapse.innerText = `Ethereum Unit Converter ${isCollapsed ? '' : ''}`
 });
+if (localStorage.getItem('unit-collapsed') === 'true') {
+  $unitCollapse.click();
+}
+
+const $timestampCollapse = document.getElementById('timestamp-converter-collapse');
+const $timestampContainer = document.getElementById('timestamp-converter');
 $timestampCollapse.addEventListener('click', function() {
   $timestampContainer.classList.toggle('collapsed');
 
@@ -218,12 +253,19 @@ $timestampCollapse.addEventListener('click', function() {
   localStorage.setItem('timestamp-collapsed', isCollapsed);
   $timestampCollapse.innerText = `Timestamp Date Converter ${isCollapsed ? '' : ''}`
 });
-if (localStorage.getItem('decoder-collapsed') === 'true') {
-  $decoderCollapse.click();
-}
-if (localStorage.getItem('unit-collapsed') === 'true') {
-  $unitCollapse.click();
-}
 if (localStorage.getItem('timestamp-collapsed') === 'true') {
   $timestampCollapse.click();
+}
+
+const $hexadecimalCollapse = document.getElementById('hexadecimal-converter-collapse');
+const $hexadecimalContainer = document.getElementById('hexadecimal-converter');
+$hexadecimalCollapse.addEventListener('click', function() {
+  $hexadecimalContainer.classList.toggle('collapsed');
+
+  const isCollapsed = $hexadecimalContainer.classList.contains('collapsed');
+  localStorage.setItem('hexadecimal-collapsed', isCollapsed);
+  $hexadecimalCollapse.innerText = `Hexadecimal Converter ${isCollapsed ? '' : ''}`
+});
+if (localStorage.getItem('hexadecimal-collapsed') === 'true') {
+  $hexadecimalCollapse.click();
 }
