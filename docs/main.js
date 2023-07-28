@@ -194,6 +194,7 @@ const $decimal = document.querySelector('#decimal');
 const $hexadecimalEth = document.querySelector('#hexadecimal-eth');
 
 const hexadecimalUnit = new URL(window.location).searchParams.get('hexadecimal');
+const hexadecimalUnitInitValue = hexadecimalUnit ? hexadecimalUnit : parseUnits('1', 'ether');
 
 function setHexadecimalInputs(value) {
   const bnBalue = BigNumber.from(value);
@@ -213,8 +214,7 @@ $decimal.addEventListener('input', function () {
   setHexadecimalInputs(BigNumber.from($decimal.value).toString());
 });
 
-$hexadecimal.value = hexadecimalUnit;
-setHexadecimalInputs(hexadecimalUnit);
+setHexadecimalInputs(hexadecimalUnitInitValue);
 
 // Collapse button
 
