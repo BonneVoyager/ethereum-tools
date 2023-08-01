@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="initial-scale=1, user-scalable=yes">
-  <title>Ethereum Input Data Decoder</title>
+  <title>Ethereum Tools</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -80,6 +80,21 @@
     <div class="column">
       <label class="label">ETH:
         <input class="input" id="hexadecimal-eth" readonly />
+      </label>
+    </div>
+  </div>
+
+  <h2 id="json-parser-collapse">JSON5 Parser</h2>
+
+  <div id="json-parser" class="container">
+    <div class="column2">
+      <label class="label">JSON:
+        <textarea class="textarea" id="json"></textarea>
+      </label>
+    </div>
+    <div class="column2">
+      <label class="label">Parsed:
+        <textarea class="textarea" id="parsed" readonly></textarea>
       </label>
     </div>
   </div>

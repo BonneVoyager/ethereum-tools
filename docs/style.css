@@ -690,7 +690,14 @@ button {
   padding: 10px;
 }
 
-.column label {
+.column2 {
+  display: inline-block;
+  width: 50%;
+  padding: 10px;
+}
+
+.column label,
+.column2 label {
   display: block;
 }
 
@@ -717,12 +724,19 @@ button {
 #input-data-decoder,
 #unit-converter,
 #timestamp-converter,
-#hexadecimal-converter {
+#hexadecimal-converter,
+#json-parser {
   overflow: hidden;
 }
 #input-data-decoder.collapsed,
 #unit-converter.collapsed,
 #timestamp-converter.collapsed,
-#hexadecimal-converter.collapsed {
+#hexadecimal-converter.collapsed,
+#json-parser.collapsed {
   height: 0;
+}
+
+#json,
+#parsed {
+  height: 400px;
 }

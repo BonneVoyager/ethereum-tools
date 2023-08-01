@@ -1,5 +1,6 @@
 const { BigNumber } = require("@ethersproject/bignumber");
 const { formatUnits, parseUnits } = require("@ethersproject/units");
+const JSON5 = require("json5");
 
 // Input Decoder
 
@@ -146,16 +147,22 @@ function toPlainString(num) { // this is to support scientific notation
 }
 
 $wei.addEventListener('input', function () {
-  const value = BigNumber.from(parseUnits(toPlainString($wei.value), 'wei'));
-  setConverterInputs(value);
+  try {
+    const value = BigNumber.from(parseUnits(toPlainString($wei.value), 'wei'));
+    setConverterInputs(value);
+  } catch (ex) {}
 });
 $gwei.addEventListener('input', function () {
-  const value = BigNumber.from(parseUnits(toPlainString($gwei.value), 'gwei'));
-  setConverterInputs(value);
+  try {
+    const value = BigNumber.from(parseUnits(toPlainString($gwei.value), 'gwei'));
+    setConverterInputs(value);
+  } catch (ex) {}
 });
 $ether.addEventListener('input', function () {
-  const value = BigNumber.from(parseUnits(toPlainString($ether.value), 'ether'));
-  setConverterInputs(value);
+  try {
+    const value = BigNumber.from(parseUnits(toPlainString($ether.value), 'ether'));
+    setConverterInputs(value);
+  } catch (ex) {}
 });
 
 setConverterInputs(unitInitValue);
@@ -180,8 +187,10 @@ function setDateInputs(timestamp) {
 }
 
 $timestamp.addEventListener('input', function () {
-  const value = parseInt($timestamp.value, 10);
-  setDateInputs(value);
+  try {
+    const value = parseInt($timestamp.value, 10);
+    setDateInputs(value);
+  } catch (ex) {}
 });
 
 $timestamp.value = timestampInitValue;
@@ -208,13 +217,30 @@ function setHexadecimalInputs(value) {
 }
 
 $hexadecimal.addEventListener('input', function () {
-  setHexadecimalInputs(BigNumber.from($hexadecimal.value).toString());
+  try {
+    setHexadecimalInputs(BigNumber.from($hexadecimal.value).toString());
+  } catch (ex) {}
 });
 $decimal.addEventListener('input', function () {
-  setHexadecimalInputs(BigNumber.from($decimal.value).toString());
+  try {
+    setHexadecimalInputs(BigNumber.from($decimal.value).toString());
+  } catch (ex) {}
 });
 
 setHexadecimalInputs(hexadecimalUnitInitValue);
+
+// JSON parser
+
+const $json = document.querySelector('#json');
+const $parsed = document.querySelector('#parsed');
+
+$json.addEventListener('input', function () {
+  try {
+    $parsed.value = JSON.stringify(JSON5.parse($json.value), null, 2);
+  } catch (ex) {
+    $parsed.value = 'Invalid JSON';
+  }
+});
 
 // Collapse button
 
@@ -268,4 +294,17 @@ $hexadecimalCollapse.addEventListener('click', function() {
 });
 if (localStorage.getItem('hexadecimal-collapsed') === 'true') {
   $hexadecimalCollapse.click();
+}
+
+const $jsonCollapse = document.getElementById('json-parser-collapse');
+const $jsonContainer = document.getElementById('json-parser');
+$jsonCollapse.addEventListener('click', function() {
+  $jsonContainer.classList.toggle('collapsed');
+
+  const isCollapsed = $jsonContainer.classList.contains('collapsed');
+  localStorage.setItem('json-parser', isCollapsed);
+  $jsonCollapse.innerText = `JSON5 Parser ${isCollapsed ? '' : ''}`
+});
+if (localStorage.getItem('json-parser') === 'true') {
+  $jsonCollapse.click();
 }
