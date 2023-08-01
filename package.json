@@ -1,5 +1,5 @@
 {
-  "name": "ethereum-input-data-decoder",
+  "name": "ethereum-tools",
   "version": "0.5.0",
   "description": "Ethereum smart contract transaction input data decoder",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://bonnevoyager.github.io/ethereum-input-data-decoder/"
+    "url": "https://bonnevoyager.github.io/ethereum-tools/"
   },
   "author": {
     "name": "Miguel Mota",
