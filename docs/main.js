@@ -178,8 +178,11 @@ const timestampInitValue = timestampUnit ? BigNumber.from(timestampUnit) : Math.
 
 function setDateInputs(timestamp) {
   const jsTimestamp = timestamp * 1000;
+  $timestamp.value = timestamp;
   $date.value = new Date(jsTimestamp).toISOString().replace('T', ' ').replace('.000Z', '');
-  $localeDate.value = new Date(jsTimestamp).toLocaleString();
+
+  const offset = new Date().getTimezoneOffset() * 1000 * 60;
+  $localeDate.value = new Date(jsTimestamp - offset).toISOString().substring(0, 16);
 
   const url = new URL(window.location);
   url.searchParams.set('timestamp', timestamp);
@@ -189,6 +192,12 @@ function setDateInputs(timestamp) {
 $timestamp.addEventListener('input', function () {
   try {
     const value = parseInt($timestamp.value, 10);
+    setDateInputs(value);
+  } catch (ex) {}
+});
+$localeDate.addEventListener('input', function () {
+  try {
+    const value = new Date($localeDate.value).getTime() / 1000;
     setDateInputs(value);
   } catch (ex) {}
 });

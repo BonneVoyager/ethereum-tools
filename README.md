@@ -13,6 +13,8 @@ Please check the original repo for documentation and an NPM package.
 
 The motivation behind this fork is that the archived code actually works fine and it's useful when your team needs to validate the transactions before actually deploying or executing them (e.g. via multi-sig) as well as have common Ethereum tools in a single place.
 
+The code is ugly, but it works. This tool was built with speed in mind waiting for a perfectly clean refactor using another cool JS frontend framework.
+
 web interface is available [here](https://bonnevoyager.github.io/ethereum-tools/).
 
 ## Development
