@@ -721,6 +721,11 @@ button {
   width: 100%;
 }
 
+.input,
+.textarea {
+  font-family: monospace;
+}
+
 #input-data-decoder,
 #unit-converter,
 #timestamp-converter,
@@ -739,4 +744,8 @@ button {
 #json,
 #parsed {
   height: 400px;
+}
+
+.read-only-input {
+  border-color: #444;
 }
