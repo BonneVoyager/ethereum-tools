@@ -256,9 +256,9 @@ $json.addEventListener('input', function () {
 const $decoderCollapse = document.getElementById('input-data-decoder-collapse');
 const $decoderContainer = document.getElementById('input-data-decoder');
 $decoderCollapse.addEventListener('click', function() {
-  $decoderContainer.classList.toggle('collapsed');
+  $decoderContainer.parentNode.classList.toggle('collapsed');
 
-  const isCollapsed = $decoderContainer.classList.contains('collapsed');
+  const isCollapsed = $decoderContainer.parentNode.classList.contains('collapsed');
   localStorage.setItem('decoder-collapsed', isCollapsed);
   $decoderCollapse.innerText = `Ethereum Input Data Decoder ${isCollapsed ? '' : ''}`
 });
@@ -269,9 +269,9 @@ if (localStorage.getItem('decoder-collapsed') === 'true') {
 const $unitCollapse = document.getElementById('unit-converter-collapse');
 const $unitContainer = document.getElementById('unit-converter');
 $unitCollapse.addEventListener('click', function() {
-  $unitContainer.classList.toggle('collapsed');
+  $unitContainer.parentNode.classList.toggle('collapsed');
 
-  const isCollapsed = $unitContainer.classList.contains('collapsed');
+  const isCollapsed = $unitContainer.parentNode.classList.contains('collapsed');
   localStorage.setItem('unit-collapsed', isCollapsed);
   $unitCollapse.innerText = `Ethereum Unit Converter ${isCollapsed ? '' : ''}`
 });
@@ -282,9 +282,9 @@ if (localStorage.getItem('unit-collapsed') === 'true') {
 const $timestampCollapse = document.getElementById('timestamp-converter-collapse');
 const $timestampContainer = document.getElementById('timestamp-converter');
 $timestampCollapse.addEventListener('click', function() {
-  $timestampContainer.classList.toggle('collapsed');
+  $timestampContainer.parentNode.classList.toggle('collapsed');
 
-  const isCollapsed = $timestampContainer.classList.contains('collapsed');
+  const isCollapsed = $timestampContainer.parentNode.classList.contains('collapsed');
   localStorage.setItem('timestamp-collapsed', isCollapsed);
   $timestampCollapse.innerText = `Timestamp Date Converter ${isCollapsed ? '' : ''}`
 });
@@ -295,9 +295,9 @@ if (localStorage.getItem('timestamp-collapsed') === 'true') {
 const $hexadecimalCollapse = document.getElementById('hexadecimal-converter-collapse');
 const $hexadecimalContainer = document.getElementById('hexadecimal-converter');
 $hexadecimalCollapse.addEventListener('click', function() {
-  $hexadecimalContainer.classList.toggle('collapsed');
+  $hexadecimalContainer.parentNode.classList.toggle('collapsed');
 
-  const isCollapsed = $hexadecimalContainer.classList.contains('collapsed');
+  const isCollapsed = $hexadecimalContainer.parentNode.classList.contains('collapsed');
   localStorage.setItem('hexadecimal-collapsed', isCollapsed);
   $hexadecimalCollapse.innerText = `Hexadecimal Converter ${isCollapsed ? '' : ''}`
 });
@@ -308,9 +308,9 @@ if (localStorage.getItem('hexadecimal-collapsed') === 'true') {
 const $jsonCollapse = document.getElementById('json-parser-collapse');
 const $jsonContainer = document.getElementById('json-parser');
 $jsonCollapse.addEventListener('click', function() {
-  $jsonContainer.classList.toggle('collapsed');
+  $jsonContainer.parentNode.classList.toggle('collapsed');
 
-  const isCollapsed = $jsonContainer.classList.contains('collapsed');
+  const isCollapsed = $jsonContainer.parentNode.classList.contains('collapsed');
   localStorage.setItem('json-parser', isCollapsed);
   $jsonCollapse.innerText = `JSON5 Parser ${isCollapsed ? '' : ''}`
 });

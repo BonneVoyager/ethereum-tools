@@ -7,97 +7,107 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2 id="input-data-decoder-collapse">Ethereum Input Data Decoder</h2>
+  <section>
+    <h2 id="input-data-decoder-collapse">Ethereum Input Data Decoder</h2>
 
-  <div id="input-data-decoder" class="container">
-    <div class="column">
-      <label class="data-label"">ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
-      <textarea class="textarea" id="abiInput" cols="70" rows="25" placeholder="[]"></textarea>
+    <div id="input-data-decoder" class="container">
+      <div class="column">
+        <label class="data-label"">ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
+        <textarea class="textarea" id="abiInput" cols="70" rows="25" placeholder="[]"></textarea>
+      </div>
+      <div class="column">
+        <label class="data-label">Input Data:</label>
+        <textarea class="textarea" id="dataInput" cols="70" rows="25" placeholder="0x"></textarea>
+      </div>
+      <div class="column">
+        <label class="data-label">Output: <button id="decode">Decode</button></label>
+        <textarea class="textarea read-only-input" id="output" cols="70" rows="25" readonly></textarea>
+      </div>
     </div>
-    <div class="column">
-      <label class="data-label">Input Data:</label>
-      <textarea class="textarea" id="dataInput" cols="70" rows="25" placeholder="0x"></textarea>
-    </div>
-    <div class="column">
-      <label class="data-label">Output: <button id="decode">Decode</button></label>
-      <textarea class="textarea read-only-input" id="output" cols="70" rows="25" readonly></textarea>
-    </div>
-  </div>
+  </section>
 
-  <h2 id="unit-converter-collapse">Ethereum Unit Converter</h2>
+  <section>
+    <h2 id="unit-converter-collapse">Ethereum Unit Converter</h2>
 
-  <div id="unit-converter" class="container">
-    <div class="column">
-      <label class="label">Wei:
-        <input class="input" id="wei" type="number" />
-      </label>
+    <div id="unit-converter" class="container">
+      <div class="column">
+        <label class="label">Wei:
+          <input class="input" id="wei" type="number" />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">Gwei:
+          <input class="input" id="gwei" type="number" />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">Ether:
+          <input class="input" id="ether" type="number" value="1" />
+        </label>
+      </div>
     </div>
-    <div class="column">
-      <label class="label">Gwei:
-        <input class="input" id="gwei" type="number" />
-      </label>
-    </div>
-    <div class="column">
-      <label class="label">Ether:
-        <input class="input" id="ether" type="number" value="1" />
-      </label>
-    </div>
-  </div>
+  </section>
 
-  <h2 id="timestamp-converter-collapse">Timestamp Date Converter</h2>
+  <section>
+    <h2 id="timestamp-converter-collapse">Timestamp Date Converter</h2>
 
-  <div id="timestamp-converter" class="container">
-    <div class="column">
-      <label class="label">Timestamp:
-        <input class="input" id="timestamp" type="number" />
-      </label>
+    <div id="timestamp-converter" class="container">
+      <div class="column">
+        <label class="label">Unix Timestamp:
+          <input class="input" id="timestamp" type="number" />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">Readable Date (UTC):
+          <input class="input read-only-input" id="date" type="text" readonly />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">ISO Date (Local):
+          <input class="input" id="localeDate" type="datetime-local" />
+        </label>
+      </div>
     </div>
-    <div class="column">
-      <label class="label">Readable Date (UTC):
-        <input class="input read-only-input" id="date" type="text" readonly />
-      </label>
-    </div>
-    <div class="column">
-      <label class="label">ISO Date (Local):
-        <input class="input" id="localeDate" type="datetime-local" />
-      </label>
-    </div>
-  </div>
+  </section>
 
-  <h2 id="hexadecimal-converter-collapse">Hexadecimal Converter</h2>
+  <section>
+    <h2 id="hexadecimal-converter-collapse">Hexadecimal Converter</h2>
 
-  <div id="hexadecimal-converter" class="container">
-    <div class="column">
-      <label class="label">Decimal:
-        <input class="input" id="decimal" type="text" />
-      </label>
+    <div id="hexadecimal-converter" class="container">
+      <div class="column">
+        <label class="label">Decimal:
+          <input class="input" id="decimal" type="text" />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">Hexadecimal:
+          <input class="input" id="hexadecimal" />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">ETH:
+          <input class="input read-only-input" id="hexadecimal-eth" readonly />
+        </label>
+      </div>
     </div>
-    <div class="column">
-      <label class="label">Hexadecimal:
-        <input class="input" id="hexadecimal" />
-      </label>
-    </div>
-    <div class="column">
-      <label class="label">ETH:
-        <input class="input read-only-input" id="hexadecimal-eth" readonly />
-      </label>
-    </div>
-  </div>
+  </section>
 
-  <h2 id="json-parser-collapse">JSON5 Parser</h2>
+  <section>
+    <h2 id="json-parser-collapse">JSON5 Parser</h2>
 
-  <div id="json-parser" class="container">
-    <div class="column2">
-      <label class="label">JSON:
-        <textarea class="textarea" id="json"></textarea>
-      </label>
+    <div id="json-parser" class="container">
+      <div class="column2">
+        <label class="label">JSON:
+          <textarea class="textarea" id="json"></textarea>
+        </label>
+      </div>
+      <div class="column2">
+        <label class="label">Parsed:
+          <textarea class="textarea read-only-input" id="parsed" readonly></textarea>
+        </label>
+      </div>
     </div>
-    <div class="column2">
-      <label class="label">Parsed:
-        <textarea class="textarea read-only-input" id="parsed" readonly></textarea>
-      </label>
-    </div>
-  </div>
+  </section>
 
   <script src="bundle.js"></script>
 </body>

@@ -660,15 +660,10 @@ dialog::backdrop {
 
 /* Custom styles */
 
-body {
-  padding: 0 20px;
-}
-
 h2 {
   padding-left: 10px;
-  margin-bottom: 20px;
-  margin-top: 20px;
-  font-size: 36px;
+  margin-bottom: 0;
+  font-size: 30px;
   height: 40px;
   cursor: pointer;
 }
@@ -733,11 +728,11 @@ button {
 #json-parser {
   overflow: hidden;
 }
-#input-data-decoder.collapsed,
-#unit-converter.collapsed,
-#timestamp-converter.collapsed,
-#hexadecimal-converter.collapsed,
-#json-parser.collapsed {
+section.collapsed #input-data-decoder,
+section.collapsed #unit-converter,
+section.collapsed #timestamp-converter,
+section.collapsed #hexadecimal-converter,
+section.collapsed #json-parser {
   height: 0;
 }
 
@@ -748,4 +743,14 @@ button {
 
 .read-only-input {
   border-color: #444;
+}
+
+section {
+  margin: 0;
+  padding: 10px 10px;
+  border-bottom: 1px solid #444;
+}
+
+section.collapsed h2 {
+  color: #888;
 }
