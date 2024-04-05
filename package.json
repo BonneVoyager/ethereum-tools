@@ -1,9 +1,8 @@
 {
   "name": "ethereum-tools",
   "version": "0.5.0",
-  "description": "Ethereum smart contract transaction input data decoder",
+  "description": "Set of Ethereum Tools",
   "main": "dist/index.js",
-  "types": "index.d.ts",
   "scripts": {
     "test": "tape ./test/index.js",
     "build:example": "browserify ./docs/main.js -o ./docs/bundle.js",
@@ -15,11 +14,6 @@
   "repository": {
     "type": "git",
     "url": "https://bonnevoyager.github.io/ethereum-tools/"
-  },
-  "author": {
-    "name": "Miguel Mota",
-    "email": "hello@miguelmota.com",
-    "url": "https://miguelmota.com/"
   },
   "license": "MIT",
   "dependencies": {
@@ -33,10 +27,7 @@
   },
   "keywords": [
     "ethereum",
-    "decoder",
-    "abi",
-    "smart",
-    "contracts"
+    "tools"
   ],
   "devDependencies": {
     "babel-cli": "^6.26.0",

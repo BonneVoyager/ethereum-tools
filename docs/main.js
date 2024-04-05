@@ -1,4 +1,6 @@
 const { BigNumber } = require("@ethersproject/bignumber");
+const { keccak256 } = require("@ethersproject/keccak256");
+const { toUtf8Bytes } = require("@ethersproject/strings");
 const { formatUnits, parseUnits } = require("@ethersproject/units");
 const JSON5 = require("json5");
 
@@ -238,6 +240,23 @@ $decimal.addEventListener('input', function () {
 
 setHexadecimalInputs(hexadecimalUnitInitValue);
 
+// Keccak-256
+
+function remove0xPrefix(str) {
+  return str.startsWith("0x") ? str.slice(2) : str;
+}
+const $keccak256Input = document.querySelector('#keccak256-input');
+const $keccak256Output = document.querySelector('#keccak256-output');
+
+$keccak256Input.addEventListener('input', function () {
+  try {
+    $keccak256Output.value = remove0xPrefix(keccak256(toUtf8Bytes($keccak256Input.value)));
+  } catch (ex) {
+    console.warn(ex)
+    $keccak256Output.value = 'Invalid Input';
+  }
+});
+
 // JSON parser
 
 const $json = document.querySelector('#json');
@@ -303,6 +322,19 @@ $hexadecimalCollapse.addEventListener('click', function() {
 });
 if (localStorage.getItem('hexadecimal-collapsed') === 'true') {
   $hexadecimalCollapse.click();
+}
+
+const $keccak256Collapse = document.getElementById('keccak256-converter-collapse');
+const $keccak256Container = document.getElementById('keccak256-converter');
+$keccak256Collapse.addEventListener('click', function() {
+  $keccak256Container.parentNode.classList.toggle('collapsed');
+
+  const isCollapsed = $keccak256Container.parentNode.classList.contains('collapsed');
+  localStorage.setItem('keccak256-collapsed', isCollapsed);
+  $keccak256Collapse.innerText = `Keccak256 Converter ${isCollapsed ? '' : ''}`
+});
+if (localStorage.getItem('keccak256-collapsed') === 'true') {
+  $keccak256Collapse.click();
 }
 
 const $jsonCollapse = document.getElementById('json-parser-collapse');
