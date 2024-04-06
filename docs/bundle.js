@@ -1,8 +1,11 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 const { BigNumber } = require("@ethersproject/bignumber");
+const { entropyToMnemonic } = require("@ethersproject/hdnode");
 const { keccak256 } = require("@ethersproject/keccak256");
 const { toUtf8Bytes } = require("@ethersproject/strings");
+const { randomBytes } = require("@ethersproject/random");
 const { formatUnits, parseUnits } = require("@ethersproject/units");
+const { Wallet } = require("@ethersproject/wallet");
 const JSON5 = require("json5");
 
 // Input Decoder
@@ -241,6 +244,20 @@ $decimal.addEventListener('input', function () {
 
 setHexadecimalInputs(hexadecimalUnitInitValue);
 
+// Random Ethereum Account
+
+const $accountAddress = document.querySelector('#account-address');
+const $accountPrivateKey = document.querySelector('#account-private-key');
+const $accountMnemonic = document.querySelector('#account-mnemonic');
+
+const randomBytes32 = randomBytes(32);
+const mnemonic = entropyToMnemonic(randomBytes32);
+const wallet = Wallet.fromMnemonic(mnemonic);
+
+$accountAddress.value = wallet.address;
+$accountPrivateKey.value = wallet.privateKey;
+$accountMnemonic.value = mnemonic;
+
 // Keccak-256
 
 function remove0xPrefix(str) {
@@ -325,14 +342,27 @@ if (localStorage.getItem('hexadecimal-collapsed') === 'true') {
   $hexadecimalCollapse.click();
 }
 
-const $keccak256Collapse = document.getElementById('keccak256-converter-collapse');
-const $keccak256Container = document.getElementById('keccak256-converter');
+const $accountCollapse = document.getElementById('random-account-collapse');
+const $accountContainer = document.getElementById('random-account');
+$accountCollapse.addEventListener('click', function() {
+  $accountContainer.parentNode.classList.toggle('collapsed');
+
+  const isCollapsed = $accountContainer.parentNode.classList.contains('collapsed');
+  localStorage.setItem('random-account-collapsed', isCollapsed);
+  $accountCollapse.innerText = `Random Ethereum Account ${isCollapsed ? '' : ''}`
+});
+if (localStorage.getItem('random-account-collapsed') === 'true') {
+  $accountCollapse.click();
+}
+
+const $keccak256Collapse = document.getElementById('keccak256-hasher-collapse');
+const $keccak256Container = document.getElementById('keccak256-hasher');
 $keccak256Collapse.addEventListener('click', function() {
   $keccak256Container.parentNode.classList.toggle('collapsed');
 
   const isCollapsed = $keccak256Container.parentNode.classList.contains('collapsed');
   localStorage.setItem('keccak256-collapsed', isCollapsed);
-  $keccak256Collapse.innerText = `Keccak256 Converter ${isCollapsed ? '' : ''}`
+  $keccak256Collapse.innerText = `Keccak256 Hasher ${isCollapsed ? '' : ''}`
 });
 if (localStorage.getItem('keccak256-collapsed') === 'true') {
   $keccak256Collapse.click();
@@ -351,7 +381,7 @@ if (localStorage.getItem('json-parser') === 'true') {
   $jsonCollapse.click();
 }
 
-},{"../index":2,"@ethersproject/bignumber":31,"@ethersproject/keccak256":58,"@ethersproject/strings":104,"@ethersproject/units":109,"json5":174}],2:[function(require,module,exports){
+},{"../index":2,"@ethersproject/bignumber":31,"@ethersproject/hdnode":51,"@ethersproject/keccak256":58,"@ethersproject/random":88,"@ethersproject/strings":104,"@ethersproject/units":109,"@ethersproject/wallet":111,"json5":174}],2:[function(require,module,exports){
 const ethers = require('ethers')
 const Buffer = require('buffer/').Buffer
 const isBuffer = require('is-buffer')

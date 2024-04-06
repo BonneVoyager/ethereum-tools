@@ -725,7 +725,8 @@ button {
 #unit-converter,
 #timestamp-converter,
 #hexadecimal-converter,
-#keccak256-converter,
+#keccak256-hasher,
+#random-account,
 #json-parser {
   overflow: hidden;
 }
@@ -733,7 +734,8 @@ section.collapsed #input-data-decoder,
 section.collapsed #unit-converter,
 section.collapsed #timestamp-converter,
 section.collapsed #hexadecimal-converter,
-section.collapsed #keccak256-converter,
+section.collapsed #keccak256-hasher,
+section.collapsed #random-account,
 section.collapsed #json-parser {
   height: 0;
 }

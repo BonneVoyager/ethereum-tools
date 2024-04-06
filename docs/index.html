@@ -93,9 +93,30 @@
   </section>
 
   <section>
-    <h2 id="keccak256-converter-collapse">Keccak-256 Converter</h2>
+    <h2 id="random-account-collapse">Random Ethereum Account</h2>
 
-    <div id="keccak256-converter" class="container">
+    <div id="random-account" class="container">
+      <div class="column">
+        <label class="label">Address:
+          <input class="input read-only-input" id="account-address" type="text" readonly />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">Private Key:
+          <input class="input read-only-input" id="account-private-key" type="text" readonly />
+        </label>
+      </div>
+      <div class="column">
+        <label class="label">Mnemonic:
+          <input class="input read-only-input" id="account-mnemonic" type="text" readonly />
+        </label>
+      </div>
+  </section>
+
+  <section>
+    <h2 id="keccak256-hasher-collapse">Keccak-256 Hasher</h2>
+
+    <div id="keccak256-hasher" class="container">
       <div class="column2">
         <label class="label">Input:
           <input class="input" id="keccak256-input" type="text" />
@@ -103,7 +124,7 @@
       </div>
       <div class="column2">
         <label class="label">Output:
-          <input class="input read-only-input" id="keccak256-output" readonly />
+          <input class="input read-only-input" type="text" id="keccak256-output" readonly />
         </label>
       </div>
   </section>
