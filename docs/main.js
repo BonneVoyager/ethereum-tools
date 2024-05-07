@@ -7,6 +7,10 @@ const { formatUnits, parseUnits } = require("@ethersproject/units");
 const { Wallet } = require("@ethersproject/wallet");
 const JSON5 = require("json5");
 
+// Expose some abstraction to window
+
+window.BigNumber = BigNumber;
+
 // Input Decoder
 
 const InputDataDecoder = require('../index');
@@ -259,15 +263,12 @@ $accountMnemonic.value = mnemonic;
 
 // Keccak-256
 
-function remove0xPrefix(str) {
-  return str.startsWith("0x") ? str.slice(2) : str;
-}
 const $keccak256Input = document.querySelector('#keccak256-input');
 const $keccak256Output = document.querySelector('#keccak256-output');
 
 $keccak256Input.addEventListener('input', function () {
   try {
-    $keccak256Output.value = remove0xPrefix(keccak256(toUtf8Bytes($keccak256Input.value)));
+    $keccak256Output.value = keccak256(toUtf8Bytes($keccak256Input.value));
   } catch (ex) {
     console.warn(ex)
     $keccak256Output.value = 'Invalid Input';
