@@ -727,6 +727,7 @@ button {
 #hexadecimal-converter,
 #keccak256-hasher,
 #random-account,
+#tx-decoder,
 #json-parser {
   overflow: hidden;
 }
@@ -736,13 +737,16 @@ section.collapsed #timestamp-converter,
 section.collapsed #hexadecimal-converter,
 section.collapsed #keccak256-hasher,
 section.collapsed #random-account,
+section.collapsed #tx-decoder,
 section.collapsed #json-parser {
   height: 0;
 }
 
 #json,
-#parsed {
-  height: 400px;
+#parsed,
+#transaction,
+#decoded {
+  height: 300px;
 }
 
 .read-only-input {

@@ -5,6 +5,7 @@ This is a fork of [ethereum-input-data-decoder](https://github.com/miguelmota/et
 - Ethereum Unit Converter (Wei / Gwei / Ether converter)
 - Timestamp Date Converter (UNIX timestamp / Human readable converter)
 - Hexadecimal Converter
+- Transaction Decoder
 - JSON5 Parser
 - Get ABI by Contract Address feature
 - Auto Decode and paste units into Unit or Timestamp Converters

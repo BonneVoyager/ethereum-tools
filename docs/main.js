@@ -5,6 +5,7 @@ const { toUtf8Bytes } = require("@ethersproject/strings");
 const { randomBytes } = require("@ethersproject/random");
 const { formatUnits, parseUnits } = require("@ethersproject/units");
 const { Wallet } = require("@ethersproject/wallet");
+const txDecoder = require("ethereum-tx-decoder");
 const JSON5 = require("json5");
 
 // Expose some abstraction to window
@@ -24,6 +25,8 @@ const $getAbi = document.querySelector('#getAbi');
 function stringifyBigNumbers(obj) {
   if (Array.isArray(obj)) {
     return obj.map(stringifyBigNumbers);
+  } else if (obj && obj._hex) {
+    return BigInt(obj._hex).toString();
   } else if (obj && obj._isBigNumber) {
     return obj.toString();
   } else if (typeof obj === 'object' && obj !== null) {
@@ -275,6 +278,20 @@ $keccak256Input.addEventListener('input', function () {
   }
 });
 
+// Transaction decoder
+
+const $transaction = document.querySelector('#transaction');
+const $decoded = document.querySelector('#decoded');
+
+$transaction.addEventListener('input', function () {
+  try {
+    console.warn(stringifyBigNumbers(txDecoder.decodeTx($transaction.value.trim())))
+    $decoded.value = JSON.stringify(stringifyBigNumbers(txDecoder.decodeTx($transaction.value.trim())), null, 2);
+  } catch (ex) {
+    $decoded.value = 'Invalid transaction';
+  }
+});
+
 // JSON parser
 
 const $json = document.querySelector('#json');
@@ -282,7 +299,7 @@ const $parsed = document.querySelector('#parsed');
 
 $json.addEventListener('input', function () {
   try {
-    $parsed.value = JSON.stringify(JSON5.parse($json.value), null, 2);
+    $parsed.value = JSON.stringify(JSON5.parse($json.value.trim()), null, 2);
   } catch (ex) {
     $parsed.value = 'Invalid JSON';
   }
@@ -366,6 +383,19 @@ $keccak256Collapse.addEventListener('click', function() {
 });
 if (localStorage.getItem('keccak256-collapsed') === 'true') {
   $keccak256Collapse.click();
+}
+
+const $txDecoderCollapse = document.getElementById('tx-decoder-collapse');
+const $txDecoderContainer = document.getElementById('tx-decoder');
+$txDecoderCollapse.addEventListener('click', function() {
+  $txDecoderContainer.parentNode.classList.toggle('collapsed');
+
+  const isCollapsed = $txDecoderContainer.parentNode.classList.contains('collapsed');
+  localStorage.setItem('tx-decoder', isCollapsed);
+  $txDecoderCollapse.innerText = `Transaction Decoder ${isCollapsed ? '' : ''}`
+});
+if (localStorage.getItem('tx-decoder') === 'true') {
+  $txDecoderCollapse.click();
 }
 
 const $jsonCollapse = document.getElementById('json-parser-collapse');
