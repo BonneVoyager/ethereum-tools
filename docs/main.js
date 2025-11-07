@@ -117,35 +117,71 @@ $dataInput.addEventListener('input', function() {
 
 // Unit Converter
 
-const $wei = document.querySelector('#wei');
-const $gwei = document.querySelector('#gwei');
-const $ether = document.querySelector('#ether');
+const $baseUnits = document.querySelector('#base-units');
+const $unitDecimals = document.querySelector('#unit-decimals');
+const $unitCustom = document.querySelector('#unit-custom');
 
 const searchUnit = new URL(window.location).searchParams.get('unit');
 const unitInitValue = searchUnit ? BigNumber.from(searchUnit) : parseUnits('1', 'ether');
+const searchUnitDecimals = new URL(window.location).searchParams.get('unitDecimals');
+const DEFAULT_UNIT_DECIMALS = 18;
+
+function sanitizeUnitDecimals(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = parseInt(value, 10);
+  if (Number.isNaN(parsed)) return null;
+  if (parsed < 0) return 0;
+  if (parsed > 30) return 30;
+  return parsed;
+}
+
+let activeUnitDecimals = sanitizeUnitDecimals(searchUnitDecimals);
+if (activeUnitDecimals === null) {
+  activeUnitDecimals = DEFAULT_UNIT_DECIMALS;
+}
+
+if ($unitDecimals) {
+  $unitDecimals.value = activeUnitDecimals;
+}
+
+let lastUnitValue = unitInitValue;
 
 function removeTrailingZero(value) {
-  const [number, decimal] = value.split('.');
-  if (decimal === '0') {
-    return number;
+  if (!value.includes('.')) {
+    return value;
   }
-  return value;
+  return value
+    .replace(/(\.\d*?[1-9])0+$/, '$1')
+    .replace(/\.0+$/, '')
+    .replace(/\.$/, '');
+}
+
+function getUnitDecimals() {
+  return activeUnitDecimals;
 }
 
 function setConverterInputs(value) {
   try {
     if (value.isNegative()) throw new Error('Negative value');
-    $wei.value = removeTrailingZero(formatUnits(value, 'wei'));
-    $gwei.value = removeTrailingZero(formatUnits(value, 'gwei'));
-    $ether.value = removeTrailingZero(formatUnits(value, 'ether'));
+    lastUnitValue = value;
+    if ($baseUnits) {
+      $baseUnits.value = removeTrailingZero(formatUnits(value, 'wei'));
+    }
+    if ($unitCustom) {
+      $unitCustom.value = removeTrailingZero(formatUnits(value, getUnitDecimals()));
+    }
 
     const url = new URL(window.location);
     url.searchParams.set('unit', value);
+    url.searchParams.set('unitDecimals', getUnitDecimals());
     window.history.pushState(null, '', url.toString());
   } catch (ex) {
-    $wei.value = 0;
-    $gwei.value = 0;
-    $ether.value = 0;
+    if ($baseUnits) {
+      $baseUnits.value = 0;
+    }
+    if ($unitCustom) {
+      $unitCustom.value = 0;
+    }
   }
 }
 
@@ -158,24 +194,61 @@ function toPlainString(num) { // this is to support scientific notation
   );
 }
 
-$wei.addEventListener('input', function () {
-  try {
-    const value = BigNumber.from(parseUnits(toPlainString($wei.value), 'wei'));
-    setConverterInputs(value);
-  } catch (ex) {}
-});
-$gwei.addEventListener('input', function () {
-  try {
-    const value = BigNumber.from(parseUnits(toPlainString($gwei.value), 'gwei'));
-    setConverterInputs(value);
-  } catch (ex) {}
-});
-$ether.addEventListener('input', function () {
-  try {
-    const value = BigNumber.from(parseUnits(toPlainString($ether.value), 'ether'));
-    setConverterInputs(value);
-  } catch (ex) {}
-});
+if ($baseUnits) {
+  $baseUnits.addEventListener('input', function () {
+    try {
+      const value = BigNumber.from(parseUnits(toPlainString($baseUnits.value), 'wei'));
+      setConverterInputs(value);
+    } catch (ex) {}
+  });
+}
+if ($unitCustom) {
+  $unitCustom.addEventListener('input', function () {
+    try {
+      const inputValue = $unitCustom.value === '' ? '0' : $unitCustom.value;
+      const value = BigNumber.from(parseUnits(toPlainString(inputValue), getUnitDecimals()));
+      setConverterInputs(value);
+    } catch (ex) {}
+  });
+}
+  if ($unitDecimals) {
+    $unitDecimals.addEventListener('input', function () {
+      const sanitized = sanitizeUnitDecimals($unitDecimals.value);
+      if (sanitized === null) return;
+      if ($unitDecimals.value !== sanitized.toString()) {
+        $unitDecimals.value = sanitized;
+      }
+      activeUnitDecimals = sanitized;
+
+      let newValue = lastUnitValue;
+      if ($unitCustom && $unitCustom.value !== '') {
+        try {
+          newValue = BigNumber.from(
+            parseUnits(toPlainString($unitCustom.value), sanitized)
+          );
+        } catch (ex) {}
+      }
+
+      setConverterInputs(newValue);
+    });
+    $unitDecimals.addEventListener('blur', function () {
+      if ($unitDecimals.value === '') {
+        $unitDecimals.value = DEFAULT_UNIT_DECIMALS;
+        activeUnitDecimals = DEFAULT_UNIT_DECIMALS;
+
+        let newValue = lastUnitValue;
+        if ($unitCustom && $unitCustom.value !== '') {
+          try {
+            newValue = BigNumber.from(
+              parseUnits(toPlainString($unitCustom.value), activeUnitDecimals)
+            );
+          } catch (ex) {}
+        }
+
+        setConverterInputs(newValue);
+      }
+    });
+  }
 
 setConverterInputs(unitInitValue);
 
