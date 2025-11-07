@@ -7,29 +7,74 @@ const { formatUnits, parseUnits } = require("@ethersproject/units");
 const { Wallet } = require("@ethersproject/wallet");
 const txDecoder = require("ethereum-tx-decoder");
 const JSON5 = require("json5");
-
-// Expose some abstraction to window
+const InputDataDecoder = require("../index");
 
 window.BigNumber = BigNumber;
 
-// Input Decoder
+/**
+ * Utility helpers
+ */
 
-const InputDataDecoder = require('../index');
+function ready(fn) {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fn, { once: true });
+  } else {
+    fn();
+  }
+}
 
-const $abiInput = document.querySelector('#abiInput');
-const $dataInput = document.querySelector('#dataInput');
-const $output = document.querySelector('#output');
-const $decode = document.querySelector('#decode');
-const $getAbi = document.querySelector('#getAbi');
+function $(selector) {
+  return document.querySelector(selector);
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function debounce(fn, delay = 150) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function removeTrailingZero(value) {
+  if (typeof value !== "string") {
+    value = String(value);
+  }
+  if (!value.includes(".")) {
+    return value;
+  }
+  return value
+    .replace(/(\.\d*?[1-9])0+$/, "$1")
+    .replace(/\.0+$/, "")
+    .replace(/\.$/, "");
+}
+
+function toPlainString(num) {
+  return ("" + num).replace(/(-?)(\d*)\.?(\d+)e([+-]\d+)/, function (a, b, c, d, e) {
+    return e < 0
+      ? b + "0." + Array(1 - e - c.length).join(0) + c + d
+      : b + c + d + Array(e - d.length + 1).join(0);
+  });
+}
+
+function formatJson(value) {
+  return JSON.stringify(value, null, 2);
+}
 
 function stringifyBigNumbers(obj) {
   if (Array.isArray(obj)) {
     return obj.map(stringifyBigNumbers);
-  } else if (obj && obj._hex) {
+  }
+  if (obj && obj._hex) {
     return BigInt(obj._hex).toString();
-  } else if (obj && obj._isBigNumber) {
+  }
+  if (obj && obj._isBigNumber) {
     return obj.toString();
-  } else if (typeof obj === 'object' && obj !== null) {
+  }
+  if (typeof obj === "object" && obj !== null) {
     return Object.keys(obj).reduce((acc, key) => {
       acc[key] = stringifyBigNumbers(obj[key]);
       return acc;
@@ -38,468 +83,470 @@ function stringifyBigNumbers(obj) {
   return obj;
 }
 
-function decode() {
-  $output.value = ''
-
-  try {
-    const abi = JSON.parse($abiInput.value.trim());
-    const decoder = new InputDataDecoder(abi);
-  
-    // if copied and pasted from etherscan only get data we need
-    const data = $dataInput.value.trim().replace(/(?:[\s\S]*MethodID: (.*)[\s\S])?[\s\S]?\[\d\]:(.*)/gi, '$1$2');
-  
-    $dataInput.value = data;
-  
-    const result = decoder.decodeData(data);
-  
-    console.log(result);
-  
-    result.inputs = stringifyBigNumbers(result.inputs);
-
-    $output.value = JSON.stringify(result, null, 2);
-  } catch(error) {
-    $output.value = "Invalid ABI or Input Data";
-  }
-}
-
-async function fetchContract(contract) {
-  const response = await fetch(`https://api.etherscan.io/api?module=contract&action=getabi&address=${contract}`);
-  const json = await response.json();
-  if (json.status !== '1') throw new Error('Invalid Etherscan status');
-  $abiInput.value = JSON.stringify(JSON.parse(json.result), null, 2);
-  decode();
-}
-
-$decode.addEventListener('click', function(event) {
-  event.preventDefault();
-  decode();
-});
-
-$getAbi.addEventListener('click', async function() {
-  const contract = prompt('Enter contract address:').trim();
-  if (!contract) return;
-  try {
-    await fetchContract(contract);
-    const url = new URL(window.location);
-    url.searchParams.set('contract', contract);
-    window.history.pushState(null, '', url.toString());
-  } catch (ex) {
-    alert('Could not fetch contract ABI from Etherscan');
-  }
-});
-
-const initContract = new URLSearchParams(window.location.search).get('contract');
-if (initContract) {
-  fetchContract(initContract);
-}
-
-$output.addEventListener('click', function() {
-  const selected = $output.value.substring($output.selectionStart, $output.selectionEnd);
-  try {
-    if (selected.startsWith('0x') || !/^\d/.test(selected)) return;
-    if (selected.length === 10 && (new Date(parseInt(selected, 10))).getTime() > 0) {
-      $timestamp.value = selected;
-      setDateInputs(selected);
-    } else {
-      const value = BigNumber.from(selected);
-      setConverterInputs(value);
-    }
-  } catch (ex) {}
-})
-
-$abiInput.addEventListener('input', function() {
-  setTimeout(decode, 50);
-});
-
-$dataInput.addEventListener('input', function() {
-  setTimeout(decode, 50);
-});
-
-// Unit Converter
-
-const UNIT_DECIMALS = {
-  MIN: 1,
-  MAX: 30,
-  DEFAULT: 18,
-};
-
-const UNIT_QUERY_KEYS = {
-  VALUE: 'unit',
-  DECIMALS: 'unitDecimals',
-};
-
-function sanitizeUnitDecimals(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const parsed = parseInt(value, 10);
-  if (Number.isNaN(parsed)) return null;
-  return Math.min(Math.max(parsed, UNIT_DECIMALS.MIN), UNIT_DECIMALS.MAX);
-}
-
-function removeTrailingZero(value) {
-  if (typeof value !== 'string') {
-    value = String(value);
-  }
-  if (!value.includes('.')) {
-    return value;
-  }
-  return value
-    .replace(/(\.\d*?[1-9])0+$/, '$1')
-    .replace(/\.0+$/, '')
-    .replace(/\.$/, '');
-}
-
-function toPlainString(num) { // this is to support scientific notation
-  return ('' + num).replace(/(-?)(\d*)\.?(\d+)e([+-]\d+)/, function (a,b,c,d,e) {
-    return e < 0
-      ? b + '0.' + Array(1-e-c.length).join(0) + c + d
-      : b + c + d + Array(e-d.length+1).join(0);
-    }
-  );
-}
-
-function getInitialUnitValue() {
-  const params = new URL(window.location).searchParams;
-  const unit = params.get(UNIT_QUERY_KEYS.VALUE);
-  return unit ? BigNumber.from(unit) : parseUnits('1', 'ether');
-}
-
-function getInitialUnitDecimals() {
-  const params = new URL(window.location).searchParams;
-  const decimals = sanitizeUnitDecimals(params.get(UNIT_QUERY_KEYS.DECIMALS));
-  return decimals === null ? UNIT_DECIMALS.DEFAULT : decimals;
-}
-
-function persistUnitState(value, decimals) {
+function updateQueryParams(next) {
   const url = new URL(window.location);
-  url.searchParams.set(UNIT_QUERY_KEYS.VALUE, value.toString());
-  url.searchParams.set(UNIT_QUERY_KEYS.DECIMALS, decimals);
-  window.history.pushState(null, '', url.toString());
+  Object.entries(next).forEach(([key, val]) => {
+    url.searchParams.set(key, val);
+  });
+  window.history.pushState(null, "", url.toString());
 }
 
-function formatDisplayValue(value, unit) {
-  return removeTrailingZero(formatUnits(value, unit));
-}
+/**
+ * Input Data Decoder
+ */
 
-function parseInputValue(value, unit) {
-  const normalized = value === '' ? '0' : value;
-  return BigNumber.from(parseUnits(toPlainString(normalized), unit));
-}
+function initInputDataDecoder(services) {
+  const abiInput = $("#abiInput");
+  const dataInput = $("#dataInput");
+  const output = $("#output");
+  const decodeButton = $("#decode");
+  const getAbiButton = $("#getAbi");
 
-function initUnitConverter() {
-  const $baseUnits = document.querySelector('#base-units');
-  const $tokenUnits = document.querySelector('#unit-custom');
-  const $tokenDecimals = document.querySelector('#unit-decimals');
-
-  if (!$baseUnits || !$tokenUnits || !$tokenDecimals) {
+  if (!abiInput || !dataInput || !output || !decodeButton || !getAbiButton) {
     return;
   }
 
-  const state = {
-    value: getInitialUnitValue(),
-    decimals: getInitialUnitDecimals(),
+  const unitConverter = services.unitConverter;
+  const timestampConverter = services.timestampConverter;
+
+  function cleanInputData(value) {
+    return value.trim().replace(/(?:[\s\S]*MethodID: (.*)[\s\S])?[\s\S]?\[\d\]:(.*)/gi, "$1$2");
+  }
+
+  function decode() {
+    output.value = "";
+    try {
+      const abi = JSON.parse(abiInput.value.trim());
+      const decoder = new InputDataDecoder(abi);
+      const data = cleanInputData(dataInput.value);
+      dataInput.value = data;
+      const result = decoder.decodeData(data);
+      result.inputs = stringifyBigNumbers(result.inputs);
+      output.value = formatJson(result);
+    } catch (error) {
+      output.value = "Invalid ABI or Input Data";
+    }
+  }
+
+  const debouncedDecode = debounce(decode, 100);
+
+  decodeButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    decode();
+  });
+
+  abiInput.addEventListener("input", debouncedDecode);
+  dataInput.addEventListener("input", debouncedDecode);
+
+  output.addEventListener("click", () => {
+    const selected = output.value.substring(output.selectionStart, output.selectionEnd);
+    if (!selected || selected.startsWith("0x") || !/^\d+$/.test(selected)) {
+      return;
+    }
+
+    const asNumber = Number(selected);
+    if (selected.length === 10 && Number.isFinite(asNumber) && asNumber > 0) {
+      timestampConverter.setTimestamp(asNumber, { persist: true });
+      return;
+    }
+
+    try {
+      unitConverter.setWeiValue(BigNumber.from(selected), { persist: true });
+    } catch (ex) {
+      // Ignore invalid selections
+    }
+  });
+
+  async function fetchContract(contract) {
+    const response = await fetch(
+      `https://api.etherscan.io/api?module=contract&action=getabi&address=${contract}`
+    );
+    const json = await response.json();
+    if (json.status !== "1") {
+      throw new Error("Invalid Etherscan status");
+    }
+    abiInput.value = formatJson(JSON.parse(json.result));
+    decode();
+  }
+
+  getAbiButton.addEventListener("click", async () => {
+    const contract = prompt("Enter contract address:");
+    if (!contract) return;
+    try {
+      await fetchContract(contract.trim());
+      updateQueryParams({ contract: contract.trim() });
+    } catch (error) {
+      alert("Could not fetch contract ABI from Etherscan");
+    }
+  });
+
+  const initContract = new URLSearchParams(window.location.search).get("contract");
+  if (initContract) {
+    fetchContract(initContract).catch(() => {});
+  } else {
+    decode();
+  }
+}
+
+/**
+ * Unit Converter
+ */
+
+function createUnitConverter() {
+  const baseUnitsInput = $("#base-units");
+  const tokenUnitsInput = $("#unit-custom");
+  const decimalsInput = $("#unit-decimals");
+
+  if (!baseUnitsInput || !tokenUnitsInput || !decimalsInput) {
+    return {
+      setWeiValue: () => {},
+    };
+  }
+
+  const DECIMALS = {
+    MIN: 0,
+    MAX: 30,
+    DEFAULT: 18,
   };
 
-  $tokenDecimals.value = state.decimals;
+  function sanitizeDecimals(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = parseInt(value, 10);
+    if (Number.isNaN(parsed)) return null;
+    return clamp(parsed, DECIMALS.MIN, DECIMALS.MAX);
+  }
 
-  function applyValue(nextValue, options = {}) {
-    const { persist = true } = options;
+  function parseInput(value, unit) {
+    const normalized = value === "" ? "0" : value;
+    return BigNumber.from(parseUnits(toPlainString(normalized), unit));
+  }
+
+  function formatValue(value, unit) {
+    return removeTrailingZero(formatUnits(value, unit));
+  }
+
+  const params = new URL(window.location).searchParams;
+  const initialValue = params.get("unit")
+    ? BigNumber.from(params.get("unit"))
+    : parseUnits("1", "ether");
+  const initialDecimals = sanitizeDecimals(params.get("unitDecimals")) ?? DECIMALS.DEFAULT;
+
+  const state = {
+    value: initialValue,
+    decimals: initialDecimals,
+  };
+
+  decimalsInput.value = state.decimals;
+
+  function updateInputs(value, { persist = true } = {}) {
     try {
-      if (nextValue.isNegative()) throw new Error('Negative value');
-      state.value = nextValue;
-      $baseUnits.value = formatDisplayValue(nextValue, 'wei');
-      $tokenUnits.value = formatDisplayValue(nextValue, state.decimals);
+      if (value.isNegative()) throw new Error("Negative value");
+      state.value = value;
+      baseUnitsInput.value = formatValue(value, "wei");
+      tokenUnitsInput.value = formatValue(value, state.decimals);
       if (persist) {
-        persistUnitState(state.value, state.decimals);
+        updateQueryParams({
+          unit: value.toString(),
+          unitDecimals: state.decimals,
+        });
       }
-    } catch (ex) {
-      $baseUnits.value = '0';
-      $tokenUnits.value = '0';
+    } catch (error) {
+      baseUnitsInput.value = "0";
+      tokenUnitsInput.value = "0";
     }
   }
 
   function readTokenUnits(decimalsOverride) {
-    if ($tokenUnits.value === '') {
+    if (tokenUnitsInput.value === "") {
       return null;
     }
     try {
-      return parseInputValue($tokenUnits.value, decimalsOverride ?? state.decimals);
-    } catch (ex) {
+      return parseInput(tokenUnitsInput.value, decimalsOverride ?? state.decimals);
+    } catch (error) {
       return null;
     }
   }
 
-  $baseUnits.addEventListener('input', function () {
+  baseUnitsInput.addEventListener("input", () => {
     try {
-      const value = parseInputValue($baseUnits.value, 'wei');
-      applyValue(value);
-    } catch (ex) {}
+      const value = parseInput(baseUnitsInput.value, "wei");
+      updateInputs(value);
+    } catch (error) {}
   });
 
-  $tokenUnits.addEventListener('input', function () {
+  tokenUnitsInput.addEventListener("input", () => {
     const value = readTokenUnits();
     if (value) {
-      applyValue(value);
+      updateInputs(value);
     }
   });
 
-  $tokenDecimals.addEventListener('input', function () {
-    const sanitized = sanitizeUnitDecimals($tokenDecimals.value);
+  decimalsInput.addEventListener("input", () => {
+    const sanitized = sanitizeDecimals(decimalsInput.value);
     if (sanitized === null) return;
-    if ($tokenDecimals.value !== sanitized.toString()) {
-      $tokenDecimals.value = sanitized;
+    if (decimalsInput.value !== sanitized.toString()) {
+      decimalsInput.value = sanitized;
     }
     state.decimals = sanitized;
-
     const derivedValue = readTokenUnits(sanitized) || state.value;
-    applyValue(derivedValue);
+    updateInputs(derivedValue);
   });
 
-  $tokenDecimals.addEventListener('blur', function () {
-    if ($tokenDecimals.value === '') {
-      $tokenDecimals.value = UNIT_DECIMALS.DEFAULT;
-      state.decimals = UNIT_DECIMALS.DEFAULT;
-      const derivedValue = readTokenUnits(UNIT_DECIMALS.DEFAULT) || state.value;
-      applyValue(derivedValue);
+  decimalsInput.addEventListener("blur", () => {
+    if (decimalsInput.value === "") {
+      decimalsInput.value = DECIMALS.DEFAULT;
+      state.decimals = DECIMALS.DEFAULT;
+      const derivedValue = readTokenUnits(DECIMALS.DEFAULT) || state.value;
+      updateInputs(derivedValue);
     }
   });
 
-  applyValue(state.value);
+  updateInputs(state.value, { persist: false });
+
+  return {
+    setWeiValue(value, options) {
+      updateInputs(BigNumber.from(value), options);
+    },
+  };
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initUnitConverter);
-} else {
-  initUnitConverter();
-}
+/**
+ * Timestamp Converter
+ */
 
-// Timestamp Converter
+function createTimestampConverter() {
+  const timestampInput = $("#timestamp");
+  const dateInput = $("#date");
+  const localeInput = $("#localeDate");
 
-const $timestamp = document.querySelector('#timestamp');
-const $date = document.querySelector('#date');
-const $localeDate = document.querySelector('#localeDate');
-
-const timestampUnit = new URL(window.location).searchParams.get('timestamp');
-const timestampInitValue = timestampUnit ? BigNumber.from(timestampUnit) : Math.ceil(Date.now() / 1000);
-
-function setDateInputs(timestamp) {
-  const jsTimestamp = timestamp * 1000;
-  $timestamp.value = timestamp;
-  $date.value = new Date(jsTimestamp).toISOString().replace('T', ' ').replace('.000Z', '');
-
-  const offset = new Date().getTimezoneOffset() * 1000 * 60;
-  $localeDate.value = new Date(jsTimestamp - offset).toISOString().substring(0, 16);
-
-  const url = new URL(window.location);
-  url.searchParams.set('timestamp', timestamp);
-  window.history.pushState(null, '', url.toString());
-}
-
-$timestamp.addEventListener('input', function () {
-  try {
-    const value = parseInt($timestamp.value, 10);
-    setDateInputs(value);
-  } catch (ex) {}
-});
-$localeDate.addEventListener('input', function () {
-  try {
-    const value = new Date($localeDate.value).getTime() / 1000;
-    setDateInputs(value);
-  } catch (ex) {}
-});
-
-$timestamp.value = timestampInitValue;
-setDateInputs(timestampInitValue);
-
-// Hexadecimals
-
-const $hexadecimal = document.querySelector('#hexadecimal');
-const $decimal = document.querySelector('#decimal');
-const $hexadecimalEth = document.querySelector('#hexadecimal-eth');
-
-const hexadecimalUnit = new URL(window.location).searchParams.get('hexadecimal');
-const hexadecimalUnitInitValue = hexadecimalUnit ? hexadecimalUnit : parseUnits('1', 'ether');
-
-function setHexadecimalInputs(value) {
-  const bnBalue = BigNumber.from(value);
-  $hexadecimal.value = bnBalue.toHexString();
-  $decimal.value = bnBalue.toString();
-  $hexadecimalEth.value = formatUnits(value, 'ether');
-
-  const url = new URL(window.location);
-  url.searchParams.set('hexadecimal', bnBalue.toHexString());
-  window.history.pushState(null, '', url.toString());
-}
-
-$hexadecimal.addEventListener('input', function () {
-  try {
-    setHexadecimalInputs(BigNumber.from($hexadecimal.value).toString());
-  } catch (ex) {}
-});
-$decimal.addEventListener('input', function () {
-  try {
-    setHexadecimalInputs(BigNumber.from($decimal.value).toString());
-  } catch (ex) {}
-});
-
-setHexadecimalInputs(hexadecimalUnitInitValue);
-
-// Random Ethereum Account
-
-const $accountAddress = document.querySelector('#account-address');
-const $accountPrivateKey = document.querySelector('#account-private-key');
-const $accountMnemonic = document.querySelector('#account-mnemonic');
-
-const randomBytes32 = randomBytes(32);
-const mnemonic = entropyToMnemonic(randomBytes32);
-const wallet = Wallet.fromMnemonic(mnemonic);
-
-$accountAddress.value = wallet.address;
-$accountPrivateKey.value = wallet.privateKey;
-$accountMnemonic.value = mnemonic;
-
-// Keccak-256
-
-const $keccak256Input = document.querySelector('#keccak256-input');
-const $keccak256Output = document.querySelector('#keccak256-output');
-
-$keccak256Input.addEventListener('input', function () {
-  try {
-    $keccak256Output.value = keccak256(toUtf8Bytes($keccak256Input.value));
-  } catch (ex) {
-    console.warn(ex)
-    $keccak256Output.value = 'Invalid Input';
+  if (!timestampInput || !dateInput || !localeInput) {
+    return {
+      setTimestamp: () => {},
+    };
   }
-});
 
-// Transaction decoder
+  const params = new URL(window.location).searchParams;
+  const initialValue = params.get("timestamp")
+    ? Number(params.get("timestamp"))
+    : Math.ceil(Date.now() / 1000);
 
-const $transaction = document.querySelector('#transaction');
-const $decoded = document.querySelector('#decoded');
-
-$transaction.addEventListener('input', function () {
-  try {
-    console.warn(stringifyBigNumbers(txDecoder.decodeTx($transaction.value.trim())))
-    $decoded.value = JSON.stringify(stringifyBigNumbers(txDecoder.decodeTx($transaction.value.trim())), null, 2);
-  } catch (ex) {
-    $decoded.value = 'Invalid transaction';
+  function render(value, { persist = true } = {}) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+      return;
+    }
+    const jsTimestamp = numericValue * 1000;
+    timestampInput.value = numericValue;
+    dateInput.value = new Date(jsTimestamp).toISOString().replace("T", " ").replace(".000Z", "");
+    const offset = new Date().getTimezoneOffset() * 60 * 1000;
+    localeInput.value = new Date(jsTimestamp - offset).toISOString().substring(0, 16);
+    if (persist) {
+      updateQueryParams({ timestamp: numericValue });
+    }
   }
-});
 
-// JSON parser
+  timestampInput.addEventListener("input", () => {
+    const value = parseInt(timestampInput.value, 10);
+    if (Number.isFinite(value)) {
+      render(value);
+    }
+  });
 
-const $json = document.querySelector('#json');
-const $parsed = document.querySelector('#parsed');
+  localeInput.addEventListener("input", () => {
+    const value = new Date(localeInput.value).getTime() / 1000;
+    if (Number.isFinite(value)) {
+      render(value);
+    }
+  });
 
-$json.addEventListener('input', function () {
-  try {
-    $parsed.value = JSON.stringify(JSON5.parse($json.value.trim()), null, 2);
-  } catch (ex) {
-    $parsed.value = 'Invalid JSON';
+  render(initialValue, { persist: false });
+
+  return {
+    setTimestamp(value, options) {
+      render(value, options);
+    },
+  };
+}
+
+/**
+ * Hexadecimal Converter
+ */
+
+function initHexConverter() {
+  const hexInput = $("#hexadecimal");
+  const decimalInput = $("#decimal");
+  const ethInput = $("#hexadecimal-eth");
+
+  if (!hexInput || !decimalInput || !ethInput) {
+    return;
   }
-});
 
-// Collapse button
+  const params = new URL(window.location).searchParams;
+  const initialValue = params.get("hexadecimal") || parseUnits("1", "ether");
 
-const $decoderCollapse = document.getElementById('input-data-decoder-collapse');
-const $decoderContainer = document.getElementById('input-data-decoder');
-$decoderCollapse.addEventListener('click', function() {
-  $decoderContainer.parentNode.classList.toggle('collapsed');
+  function render(value) {
+    const bnValue = BigNumber.from(value);
+    hexInput.value = bnValue.toHexString();
+    decimalInput.value = bnValue.toString();
+    ethInput.value = formatUnits(value, "ether");
+    updateQueryParams({ hexadecimal: bnValue.toHexString() });
+  }
 
-  const isCollapsed = $decoderContainer.parentNode.classList.contains('collapsed');
-  localStorage.setItem('decoder-collapsed', isCollapsed);
-  $decoderCollapse.innerText = `Ethereum Input Data Decoder ${isCollapsed ? '' : ''}`
-});
-if (localStorage.getItem('decoder-collapsed') === 'true') {
-  $decoderCollapse.click();
+  hexInput.addEventListener("input", () => {
+    try {
+      render(BigNumber.from(hexInput.value).toString());
+    } catch (error) {}
+  });
+
+  decimalInput.addEventListener("input", () => {
+    try {
+      render(BigNumber.from(decimalInput.value).toString());
+    } catch (error) {}
+  });
+
+  render(initialValue);
 }
 
-const $unitCollapse = document.getElementById('unit-converter-collapse');
-const $unitContainer = document.getElementById('unit-converter');
-$unitCollapse.addEventListener('click', function() {
-  $unitContainer.parentNode.classList.toggle('collapsed');
+/**
+ * Random Account Generator
+ */
 
-  const isCollapsed = $unitContainer.parentNode.classList.contains('collapsed');
-  localStorage.setItem('unit-collapsed', isCollapsed);
-  $unitCollapse.innerText = `Ethereum Unit Converter ${isCollapsed ? '' : ''}`
-});
-if (localStorage.getItem('unit-collapsed') === 'true') {
-  $unitCollapse.click();
+function initRandomAccount() {
+  const addressInput = $("#account-address");
+  const privateKeyInput = $("#account-private-key");
+  const mnemonicInput = $("#account-mnemonic");
+
+  if (!addressInput || !privateKeyInput || !mnemonicInput) {
+    return;
+  }
+
+  const entropy = randomBytes(32);
+  const mnemonic = entropyToMnemonic(entropy);
+  const wallet = Wallet.fromMnemonic(mnemonic);
+
+  addressInput.value = wallet.address;
+  privateKeyInput.value = wallet.privateKey;
+  mnemonicInput.value = mnemonic;
 }
 
-const $timestampCollapse = document.getElementById('timestamp-converter-collapse');
-const $timestampContainer = document.getElementById('timestamp-converter');
-$timestampCollapse.addEventListener('click', function() {
-  $timestampContainer.parentNode.classList.toggle('collapsed');
+/**
+ * Keccak-256 Hasher
+ */
 
-  const isCollapsed = $timestampContainer.parentNode.classList.contains('collapsed');
-  localStorage.setItem('timestamp-collapsed', isCollapsed);
-  $timestampCollapse.innerText = `Timestamp Date Converter ${isCollapsed ? '' : ''}`
-});
-if (localStorage.getItem('timestamp-collapsed') === 'true') {
-  $timestampCollapse.click();
+function initKeccakHasher() {
+  const input = $("#keccak256-input");
+  const output = $("#keccak256-output");
+
+  if (!input || !output) {
+    return;
+  }
+
+  input.addEventListener("input", () => {
+    try {
+      output.value = keccak256(toUtf8Bytes(input.value));
+    } catch (error) {
+      output.value = "Invalid Input";
+    }
+  });
 }
 
-const $hexadecimalCollapse = document.getElementById('hexadecimal-converter-collapse');
-const $hexadecimalContainer = document.getElementById('hexadecimal-converter');
-$hexadecimalCollapse.addEventListener('click', function() {
-  $hexadecimalContainer.parentNode.classList.toggle('collapsed');
+/**
+ * Transaction Decoder
+ */
 
-  const isCollapsed = $hexadecimalContainer.parentNode.classList.contains('collapsed');
-  localStorage.setItem('hexadecimal-collapsed', isCollapsed);
-  $hexadecimalCollapse.innerText = `Hexadecimal Converter ${isCollapsed ? '' : ''}`
-});
-if (localStorage.getItem('hexadecimal-collapsed') === 'true') {
-  $hexadecimalCollapse.click();
+function initTransactionDecoder() {
+  const transactionInput = $("#transaction");
+  const decodedOutput = $("#decoded");
+
+  if (!transactionInput || !decodedOutput) {
+    return;
+  }
+
+  const updateDecoded = () => {
+    try {
+      const decoded = txDecoder.decodeTx(transactionInput.value.trim());
+      decodedOutput.value = formatJson(stringifyBigNumbers(decoded));
+    } catch (error) {
+      decodedOutput.value = "Invalid transaction";
+    }
+  };
+
+  transactionInput.addEventListener("input", updateDecoded);
 }
 
-const $accountCollapse = document.getElementById('random-account-collapse');
-const $accountContainer = document.getElementById('random-account');
-$accountCollapse.addEventListener('click', function() {
-  $accountContainer.parentNode.classList.toggle('collapsed');
+/**
+ * JSON5 Parser
+ */
 
-  const isCollapsed = $accountContainer.parentNode.classList.contains('collapsed');
-  localStorage.setItem('random-account-collapsed', isCollapsed);
-  $accountCollapse.innerText = `Random Ethereum Account ${isCollapsed ? '' : ''}`
-});
-if (localStorage.getItem('random-account-collapsed') === 'true') {
-  $accountCollapse.click();
+function initJsonParser() {
+  const jsonInput = $("#json");
+  const parsedOutput = $("#parsed");
+
+  if (!jsonInput || !parsedOutput) {
+    return;
+  }
+
+  const updateParsed = () => {
+    try {
+      parsedOutput.value = formatJson(JSON5.parse(jsonInput.value.trim()));
+    } catch (error) {
+      parsedOutput.value = "Invalid JSON";
+    }
+  };
+
+  jsonInput.addEventListener("input", debounce(updateParsed, 150));
 }
 
-const $keccak256Collapse = document.getElementById('keccak256-hasher-collapse');
-const $keccak256Container = document.getElementById('keccak256-hasher');
-$keccak256Collapse.addEventListener('click', function() {
-  $keccak256Container.parentNode.classList.toggle('collapsed');
+/**
+ * Collapsible Sections
+ */
 
-  const isCollapsed = $keccak256Container.parentNode.classList.contains('collapsed');
-  localStorage.setItem('keccak256-collapsed', isCollapsed);
-  $keccak256Collapse.innerText = `Keccak256 Hasher ${isCollapsed ? '' : ''}`
-});
-if (localStorage.getItem('keccak256-collapsed') === 'true') {
-  $keccak256Collapse.click();
+function initSectionCollapsers() {
+  const sections = [
+    { header: "input-data-decoder-collapse", container: "input-data-decoder", storage: "decoder-collapsed", label: "Ethereum Input Data Decoder" },
+    { header: "unit-converter-collapse", container: "unit-converter", storage: "unit-collapsed", label: "Ethereum Unit Converter" },
+    { header: "timestamp-converter-collapse", container: "timestamp-converter", storage: "timestamp-collapsed", label: "Timestamp Date Converter" },
+    { header: "hexadecimal-converter-collapse", container: "hexadecimal-converter", storage: "hexadecimal-collapsed", label: "Hexadecimal Converter" },
+    { header: "random-account-collapse", container: "random-account", storage: "random-account-collapsed", label: "Random Ethereum Account" },
+    { header: "keccak256-hasher-collapse", container: "keccak256-hasher", storage: "keccak256-collapsed", label: "Keccak256 Hasher" },
+    { header: "tx-decoder-collapse", container: "tx-decoder", storage: "tx-decoder", label: "Transaction Decoder" },
+    { header: "json-parser-collapse", container: "json-parser", storage: "json-parser", label: "JSON5 Parser" },
+  ];
+
+  sections.forEach(({ header, container, storage, label }) => {
+    const headerEl = document.getElementById(header);
+    const containerEl = document.getElementById(container);
+    if (!headerEl || !containerEl || !containerEl.parentNode) {
+      return;
+    }
+
+    const parentSection = containerEl.parentNode;
+    const applyState = (collapsed) => {
+      parentSection.classList.toggle("collapsed", collapsed);
+      headerEl.innerText = `${label} ${collapsed ? "" : ""}`;
+    };
+
+    headerEl.addEventListener("click", () => {
+      const collapsed = !parentSection.classList.contains("collapsed");
+      applyState(collapsed);
+      localStorage.setItem(storage, collapsed);
+    });
+
+    if (localStorage.getItem(storage) === "true") {
+      applyState(true);
+    }
+  });
 }
 
-const $txDecoderCollapse = document.getElementById('tx-decoder-collapse');
-const $txDecoderContainer = document.getElementById('tx-decoder');
-$txDecoderCollapse.addEventListener('click', function() {
-  $txDecoderContainer.parentNode.classList.toggle('collapsed');
+ready(() => {
+  const unitConverter = createUnitConverter();
+  const timestampConverter = createTimestampConverter();
 
-  const isCollapsed = $txDecoderContainer.parentNode.classList.contains('collapsed');
-  localStorage.setItem('tx-decoder', isCollapsed);
-  $txDecoderCollapse.innerText = `Transaction Decoder ${isCollapsed ? '' : ''}`
+  initInputDataDecoder({ unitConverter, timestampConverter });
+  initHexConverter();
+  initRandomAccount();
+  initKeccakHasher();
+  initTransactionDecoder();
+  initJsonParser();
+  initSectionCollapsers();
 });
-if (localStorage.getItem('tx-decoder') === 'true') {
-  $txDecoderCollapse.click();
-}
-
-const $jsonCollapse = document.getElementById('json-parser-collapse');
-const $jsonContainer = document.getElementById('json-parser');
-$jsonCollapse.addEventListener('click', function() {
-  $jsonContainer.parentNode.classList.toggle('collapsed');
-
-  const isCollapsed = $jsonContainer.parentNode.classList.contains('collapsed');
-  localStorage.setItem('json-parser', isCollapsed);
-  $jsonCollapse.innerText = `JSON5 Parser ${isCollapsed ? '' : ''}`
-});
-if (localStorage.getItem('json-parser') === 'true') {
-  $jsonCollapse.click();
-}
