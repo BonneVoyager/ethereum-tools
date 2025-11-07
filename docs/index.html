@@ -5,6 +5,7 @@
   <meta name="viewport" content="initial-scale=1, user-scalable=yes">
   <title>Ethereum Tools</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
   <section>
@@ -12,7 +13,7 @@
 
     <div id="input-data-decoder" class="container">
       <div class="column">
-        <label class="data-label"">ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
+        <label class="data-label">ABI: <button id="getAbi">Get ABI by Contract Address</button></label>
         <textarea class="textarea" id="abiInput" cols="70" rows="25" placeholder="[]"></textarea>
       </div>
       <div class="column">
@@ -27,7 +28,7 @@
   </section>
 
   <section>
-    <h2 id="unit-converter-collapse">Ethereum Unit Converter</h2>
+    <h2 id="unit-converter-collapse">Unit Converter</h2>
 
     <div id="unit-converter" class="container">
       <div class="column">
@@ -37,12 +38,12 @@
       </div>
       <div class="column">
         <label class="label">Token Units:
-          <input class="input" id="unit-custom" type="number" value="1" />
+          <input class="input" id="unit-custom" type="number" />
         </label>
       </div>
       <div class="column">
         <label class="label">Token Decimals:
-          <input class="input" id="unit-decimals" type="number" min="1" max="30" value="18" />
+          <input class="input" id="unit-decimals" type="number" min="1" max="30" />
         </label>
       </div>
     </div>
@@ -111,6 +112,7 @@
           <input class="input read-only-input" id="account-mnemonic" type="text" readonly />
         </label>
       </div>
+    </div>
   </section>
 
   <section>
@@ -127,6 +129,7 @@
           <input class="input read-only-input" type="text" id="keccak256-output" readonly />
         </label>
       </div>
+    </div>
   </section>
 
   <section>
